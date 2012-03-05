@@ -13,33 +13,32 @@ class TestDeconv(unittest.TestCase):
         i[10,10] = 10.
         i[20:25,20:25] = 1.
         i[30:40,30:40] = .1
-        self.i = i
         self.b = a.img.gaussian_beam(2, shape=i.shape)
         self.b[0,0] = .05
-
+        self.i = i
         self.d = n.abs(n.fft.ifft2(n.fft.fft2(i) * n.fft.fft2(self.b)))
         ns = n.random.normal(scale=NOISE, size=i.shape)
-        self.d = n.abs(self.d + ns)
+        #self.d = n.abs(self.d + ns)
         
     def test_clean(self):
         """Test that the standard clean deconvolution runs"""
         #print 'Clean'
         p.subplot(131)
-        c,info = a.deconv.clean(self.d, self.b, verbose=False)
+        c,info = a.deconv.clean(self.d, self.b, verbose=True,tol=1.e-4,stop_if_div=False,pos_def=True)
         print "max i,c,i-c"
         print self.i.max(),c.max(),(self.i-c).max()
-#        p.imshow(n.log10(self.i),vmin=-5, vmax=1)
-        p.imshow(self.i,vmin=0.1,vmax=5)
+        p.imshow(n.log10(self.i),vmin=-5, vmax=0)
+#        p.imshow(self.i,vmin=0.1,vmax=5)
         p.title('model')
 
         p.subplot(132)
-        p.imshow(c,vmin=0.1,vmax=5)
-#        p.imshow(n.log10(c),vmin=-5, vmax=1)
+#        p.imshow(c,vmin=0.1,vmax=5)
+        p.imshow(n.log10(c),vmin=-5, vmax=0)
         p.title('cc')
 
         p.subplot(133)
-#        p.imshow(n.log10(c - self.i),vmin=-5, vmax=1)
-        p.imshow(c-self.i,vmin=0.1,vmax=5)
+        p.imshow(n.log10(n.abs(c - self.i)),vmin=-5, vmax=0)
+#        p.imshow(c-self.i,vmin=0.1,vmax=5)
         p.title('cc - model')
         #print n.sum(c - self.i)
         #p.title('CLEAN')
