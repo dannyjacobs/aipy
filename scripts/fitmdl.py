@@ -34,7 +34,7 @@ o.add_option('--master', dest='master',
     help='Operate in master mode, employing daemon-mode servers to do the work and collecting the results.  Should be a comma delimited list of host:daemonid pairs to contact.  Daemon ID will be added to baseport to determine actual port used for TCP transactions.')
 o.add_option('--sim_autos', dest='sim_autos', action='store_true',
     help='Use auto-correlations in fitting.  Default is to use only cross-correlations.')
-o.add_option('--minuv',dest='minuv',default=0.,type='float',help='Minimum baseline lenght to consider')
+o.add_option('--minuv',dest='minuv',default=0.,type='float',help='Minimum baseline length (in wavelengths at 150 MHz) to consider.')
 
 opts, args = o.parse_args(sys.argv[1:])
 
@@ -100,8 +100,9 @@ def fit_func(prms, filelist, decimate, decphs):
             if not prms.has_key(k2): prms[k2] = {}
             for sp in sprm:
                 prms[k2][sp] = prms[k][sp]
-    if not opts.quiet: a.fit.print_params(prms)
-    print prms
+    if not opts.quiet:
+        a.fit.print_params(prms)
+        print prms
     aa.set_params(prms)
     cat.set_params(prms)
     a1,a2,th = cat.get('srcshape')
@@ -118,7 +119,7 @@ def fit_func(prms, filelist, decimate, decphs):
             for (uvw,t,(i,j)),d,f in uv.all(raw=True):
                 if not dbuf.has_key(t): dbuf[t] = {}
                 if not opts.sim_autos and i == j: continue
-                if uvlen(aa.get_baseline(i,j))*0.15 <= opts.minuv: continue
+                if uvlen(aa.get_baseline(i,j))*0.15 < opts.minuv: continue
                 bl = a.miriad.ij2bl(i,j)
                 d = d.take(chans)
                 f = f.take(chans)
@@ -149,7 +150,7 @@ def fit_func(prms, filelist, decimate, decphs):
         for bl in dbuf[t]:
             i,j = a.miriad.bl2ij(bl)
             d,f,nsamp,pol = dbuf[t][bl]
-            sim_d = aa.sim(i, j, pol=pol,resolve_src=False)
+            sim_d = aa.sim(i, j, pol=pol)
             difsq = n.abs(d - sim_d)**2
             difsq = n.where(f, 0, difsq)
             score += difsq.sum()
@@ -282,6 +283,7 @@ else:
             prms,score = rv[:2]
             prms = a.fit.reconstruct_prms(prms, key_list)
             print
+            print prms
             a.fit.print_params(prms)
             print 'Score:', score * first_fit, 
             print '(%2.2f%% of %f)' % (100 * score, first_fit)
