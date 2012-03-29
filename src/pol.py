@@ -134,6 +134,7 @@ class AntennaArray(fit.AntennaArray):
             pol = args[0]
             ants = self.get_ant_list()
             return self[ants[str(i)+pol[0]]].passband() * self[ants[str(j)+pol[1]]].passband(conj=True)
+        else: return fit.AntennaArray.passband(self,i,j)
     def bm_response(self,i,j,pol='xx'):
         """Introduce Stokes' parameters into the definition of the beam."""
         try: return fit.AntennaArray.bm_response(self,i,j,pol=pol)
