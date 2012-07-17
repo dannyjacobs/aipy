@@ -60,7 +60,7 @@ for uvfile in args:
     phs_dat = {}
     if src is None: uvofile = uvfile + 'f'
     elif opts.extract: uvofile = uvfile+'.e_'+opts.src
-    else: uvofile = uvfile+'.f_'+opts.src
+    else: uvofile = uvfile+'F'
     print uvfile,'->',uvofile
     if os.path.exists(uvofile):
         print uvofile, 'exists, skipping.'
