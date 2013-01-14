@@ -183,7 +183,7 @@ for uvfile in args:
                 d, info = a.deconv.clean(d, ker, tol=opts.clean)
                 d += info['res'] / gain
             d = n.ma.array(d)
-            d = n.fft.fftshift(d, axes=0)
+            d = n.fft.fftshift(d)
         elif opts.unmask: d = d.data
         d.shape = (1,) + d.shape
         if not plot_x.has_key(bl): plot_x[bl] = []
@@ -342,15 +342,15 @@ for cnt, bl in enumerate(bls):
                 plot_times = plot_t['jd']
                 xlabel = 'Time (JD)'
             elif opts.time_axis == 'lst':
-                plot_times = plot_t['lst']
-                xlabel = 'Time (Sidereal Radians)'
+                plot_times = n.array(plot_t['lst'])*12/n.pi
+                xlabel = 'Time (Hours)'
             else: raise ValueError('Unrecognized time axis type.')
         if opts.chan_axis == 'index': label += '#%d'
         else:
             chans = freqs
             label += '%f GHz'
         for c, chan in enumerate(chans):
-            p.plot(plot_times, d[:,c], '-', label=label % chan)
+            p.plot(plot_times, d[:,c], '.', label=label % chan)
         if not opts.max is None: dmax = opts.max
         elif dmax is None: dmax = d.max()
         else: dmax = max(dmax,d.max())
