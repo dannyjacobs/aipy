@@ -40,7 +40,7 @@ opts, args = o.parse_args(sys.argv[1:])
 
 # Parse command-line options
 uv = a.miriad.UV(args[0])
-opts.ant += ',cross'
+#sopts.ant += ',cross'
 a.scripting.uv_selector(uv, opts.ant, opts.pol)
 aa = a.cal.get_aa(opts.cal, uv['sdf'], uv['sfreq'], uv['nchan'])
 chans = a.scripting.parse_chans(opts.chan, uv['nchan'])
@@ -128,12 +128,15 @@ def fit_func(prms, filelist, decimate, decphs):
                         a.miriad.pol2str[uv['pol']])
         if not opts.quiet:
             samp, vsamp, wgts = 0, 0, 0.
+            nbls = 0
             for t in dbuf:
+              if len(dbuf[t])>nbls:nbls=len(dbuf[t])
               for bl in dbuf[t]:
                 samp += len(dbuf[t][bl][1])
                 vsamp += n.logical_not(dbuf[t][bl][1]).astype(n.int).sum()
                 wgts += dbuf[t][bl][2]
             print 'Cache summary:'
+            print '   %d baselines'% nbls
             print '   %d samples' % samp
             print '   %d valid' % vsamp
             print '   %f sum weights' %  wgts
