@@ -20,6 +20,8 @@ o.add_option('--batch', dest='batch', action='store_true',
     help='Process files in batch mode (one plot each) and output to a <input file>.png file')
 o.add_option('--nogrid', dest='nogrid', action='store_true',
     help='Do not display RA/DEC grid.')
+o.add_option('--nobar', action='store_true',
+    help='Do not display colorbar.')    
 o.add_option('-f', '--fft', dest='fft', action='store_true',
     help='Perform 2D FFT of image.')
 opts, args = o.parse_args(sys.argv[1:])
@@ -69,7 +71,13 @@ for cnt, filename in enumerate(args):
     # Generate plots
     if opts.fft:
         d = n.fft.fft2(d)
-        d = a.img.recenter(d, (d.shape[0]/2, d.shape[1]/2))
+        #d = a.img.recenter(d, (d.shape[0]/2, d.shape[1]/2))
+        d = n.fft.fftshift(d)
+        u = n.fft.fftshift(n.fft.fftfreq(d.shape[0],kwds['d_ra']*a.img.deg2rad))
+        v = n.fft.fftshift(n.fft.fftfreq(d.shape[1],kwds['d_dec']*a.img.deg2rad))
+        extent=(u.min(),u.max(),v.min(),v.max())
+    else: extent=None
+        
     if opts.mode.startswith('phs'): d = n.angle(d)
     elif opts.mode.startswith('lin'): d = n.absolute(d)
     elif opts.mode.startswith('real'): d = d.real
@@ -97,12 +105,15 @@ for cnt, filename in enumerate(args):
         map.drawmeridians(n.arange(kwds['ra']-180,kwds['ra']+180,30))
         map.drawparallels(n.arange(-90,120,30))
         map.drawmapboundary()
-        map.imshow(d, vmin=min, vmax=max, cmap=cmap, interpolation='nearest')
-    else: p.imshow(d, vmin=min, vmax=max, origin='lower', cmap=cmap, interpolation='nearest')
-    p.colorbar(shrink=.5, fraction=.05)
-    p.title(filename)
-
+        map.imshow(d, vmin=min, vmax=max, cmap=cmap, interpolation='nearest',extent=extent)
+    else: p.imshow(d, vmin=min, vmax=max, origin='lower', cmap=cmap, interpolation='nearest',extent=extent)
+    if not opts.nobar: p.colorbar(shrink=.5, fraction=.05)
+    if opts.fft:
+        p.xlabel('U [$\lambda$]')
+        p.ylabel('V [$\lambda$]')
+        
     if opts.batch:
+        p.title(filename)
         print 'Saving to', outfile
         p.savefig(outfile)
         p.clf()
