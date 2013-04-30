@@ -41,10 +41,11 @@ class HealpixMap(HealpixBase):
         """Assign data to HealpixMap.map.  Infers Nside from # of pixels via
         Npix = 12 * Nside**2."""
         try:
-            assert(data.ndim == 1)
+            assert(data.ndim in [1,2])
+            if data.ndim == 2: data.shape = (data.size,) #hack for idl generated healpix
             nside = self.npix2nside(data.shape[0])
         except(AssertionError,ValueError):
-            raise ValueError("Data must be a 1 dim array with 12*N**2 entries.")
+            raise ValueError("Data must be a 1 or 2 dim array with 12*N**2 entries.")
         self.set_nside_scheme(nside, scheme)
         self.map = data
     def get_map(self):
